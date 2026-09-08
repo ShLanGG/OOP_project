@@ -37,6 +37,16 @@ class Product:
         else:
             print("Цена не должна быть нулевая или отрицательная")
 
+    def __str__(self) -> str:
+        """Строковое представление продукта."""
+        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: 'Product') -> float:
+        """Сложение двух продуктов: цена*количество + цена*количество."""
+        if isinstance(other, Product):
+            return self.price * self.quantity + other.price * other.quantity
+        raise TypeError("Складывать можно только объекты Product")
+
 
 class Category:
     """Класс для представления категории товаров."""
@@ -44,7 +54,6 @@ class Category:
     name: str
     description: str
 
-    # Приватный атрибут для хранения списка товаров
     __products: List[Product]
 
     category_count = 0
@@ -68,5 +77,13 @@ class Category:
         """Геттер, возвращающий строку со списком товаров."""
         result = ""
         for product in self.__products:
-            result += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
+            result += f"{product}\n"
         return result
+
+    def _get_total_quantity(self) -> int:
+        """Возвращает общее количество товаров на складе."""
+        return sum(product.quantity for product in self.__products)
+
+    def __str__(self) -> str:
+        """Строковое представление категории."""
+        return f"{self.name}, количество продуктов: {self._get_total_quantity()} шт."
