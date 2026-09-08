@@ -26,7 +26,6 @@ def test_category_initialization():
     category = Category("Канцтовары", "Товары для офиса", [product1, product2])
     assert category.name == "Канцтовары"
     assert category.description == "Товары для офиса"
-    # Проверяем, что товары добавлены (через геттер)
     products_str = category.products
     assert "Книга, 500.0 руб. Остаток: 100 шт." in products_str
     assert "Ручка, 20.0 руб. Остаток: 500 шт." in products_str
@@ -68,7 +67,7 @@ def test_price_setter_negative(capsys):
     product.price = -50.0
     captured = capsys.readouterr()
     assert "Цена не должна быть нулевая или отрицательная" in captured.out
-    assert product.price == 100.0  # цена не изменилась
+    assert product.price == 100.0
 
 
 def test_category_product_count_increment():
@@ -77,3 +76,21 @@ def test_category_product_count_increment():
     Category("Категория 1", "Описание", [product1, product2])
     Category("Категория 2", "Описание", [])
     assert Category.product_count == 2
+
+
+def test_product_str():
+    product = Product("Ноутбук", "Мощный", 80000.0, 3)
+    assert str(product) == "Ноутбук, 80000.0 руб. Остаток: 3 шт."
+
+
+def test_category_str():
+    product1 = Product("Телефон", "Смартфон", 50000.0, 2)
+    product2 = Product("Чехол", "Силиконовый", 500.0, 5)
+    category = Category("Электроника", "Разное", [product1, product2])
+    assert str(category) == "Электроника, количество продуктов: 7 шт."
+
+
+def test_product_add():
+    product1 = Product("Товар1", "Описание1", 100.0, 10)
+    product2 = Product("Товар2", "Описание2", 200.0, 2)
+    assert product1 + product2 == 1400.0
