@@ -1,12 +1,17 @@
+from abc import ABC, abstractmethod
 from typing import List
 
 
-class Product:
-    """Базовый класс для всех продуктов."""
+class MixinLog:
+    """Миксин, печатающий информацию о создании объекта."""
 
-    name: str
-    description: str
-    quantity: int
+    def __init__(self, *args, **kwargs):
+        print(f"Создан объект класса {self.__class__.__name__} с параметрами: {args}, {kwargs}")
+        super().__init__(*args, **kwargs)
+
+
+class BaseProduct(ABC):
+    """Абстрактный базовый класс для всех продуктов."""
 
     def __init__(self, name: str, description: str, price: float, quantity: int):
         self.name = name
@@ -14,9 +19,31 @@ class Product:
         self.__price = price
         self.quantity = quantity
 
+    @property
+    def price(self) -> float:
+        return self.__price
+
+    @price.setter
+    def price(self, new_price: float) -> None:
+        if new_price > 0:
+            self.__price = new_price
+        else:
+            print("Цена не должна быть нулевая или отрицательная")
+
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
+
+    @abstractmethod
+    def __add__(self, other):
+        pass
+
+
+class Product(MixinLog, BaseProduct):
+    """Класс продукта."""
+
     @classmethod
     def new_product(cls, product_dict: dict):
-        """Класс-метод для создания объекта Product из словаря."""
         return cls(
             name=product_dict["name"],
             description=product_dict["description"],
@@ -24,24 +51,10 @@ class Product:
             quantity=product_dict["quantity"]
         )
 
-    @property
-    def price(self) -> float:
-        """Геттер для приватного атрибута цены."""
-        return self.__price
-
-    @price.setter
-    def price(self, new_price: float) -> None:
-        """Сеттер с проверкой на положительное значение."""
-        if new_price > 0:
-            self.__price = new_price
-        else:
-            print("Цена не должна быть нулевая или отрицательная")
-
     def __str__(self) -> str:
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other: 'Product') -> float:
-        """Сложение двух продуктов одного класса."""
         if type(self) is not type(other):
             raise TypeError("Нельзя складывать товары разных классов")
         return self.price * self.quantity + other.price * other.quantity
@@ -50,17 +63,8 @@ class Product:
 class Smartphone(Product):
     """Класс смартфона."""
 
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        efficiency: str,
-        model: str,
-        memory: int,
-        color: str
-    ):
+    def __init__(self, name: str, description: str, price: float, quantity: int,
+                 efficiency: str, model: str, memory: int, color: str):
         super().__init__(name, description, price, quantity)
         self.efficiency = efficiency
         self.model = model
@@ -71,16 +75,8 @@ class Smartphone(Product):
 class LawnGrass(Product):
     """Класс газонной травы."""
 
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        country: str,
-        germination_period: int,
-        color: str
-    ):
+    def __init__(self, name: str, description: str, price: float, quantity: int,
+                 country: str, germination_period: int, color: str):
         super().__init__(name, description, price, quantity)
         self.country = country
         self.germination_period = germination_period
@@ -106,7 +102,6 @@ class Category:
         Category.product_count += len(self.__products)
 
     def add_product(self, product: Product) -> None:
-        """Добавляет продукт в приватный список."""
         if not isinstance(product, Product):
             raise TypeError("В категорию можно добавлять только объекты Product или его наследников")
         self.__products.append(product)
@@ -114,7 +109,6 @@ class Category:
 
     @property
     def products(self) -> str:
-        """Геттер списка товаров в виде строки."""
         result = ""
         for product in self.__products:
             result += f"{product}\n"

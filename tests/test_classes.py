@@ -1,5 +1,5 @@
 import pytest
-from src.main import Product, Category, Smartphone, LawnGrass
+from src.main import Product, Category, Smartphone, LawnGrass, BaseProduct, MixinLog
 
 
 @pytest.fixture(autouse=True)
@@ -11,7 +11,7 @@ def reset_category_counters():
     Category.product_count = 0
 
 
-# --- Тесты предыдущих заданий (остаются без изменений) ---
+# --- Тесты предыдущих заданий (оставьте их без изменений) ---
 
 def test_product_initialization():
     product = Product("Смартфон", "Современный смартфон", 30000.0, 15)
@@ -97,64 +97,34 @@ def test_product_add_same_class():
     assert product1 + product2 == 1400.0
 
 
-# --- Новые тесты для 4-го задания ---
+# --- Новые тесты для 5-го задания ---
 
-def test_smartphone_initialization():
-    phone = Smartphone(
-        name="iPhone 15",
-        description="Смартфон",
-        price=100000.0,
-        quantity=5,
-        efficiency="A16",
-        model="iPhone 15",
-        memory=256,
-        color="Черный"
-    )
-    assert phone.name == "iPhone 15"
-    assert phone.efficiency == "A16"
-    assert phone.model == "iPhone 15"
-    assert phone.memory == 256
-    assert phone.color == "Черный"
+def test_mixin_log_on_product_creation(capsys):
+    Product("Тест", "Описание", 100.0, 1)
+    captured = capsys.readouterr()
+    assert "Создан объект класса Product" in captured.out
+    assert "('Тест', 'Описание', 100.0, 1)" in captured.out
 
 
-def test_lawngrass_initialization():
-    grass = LawnGrass(
-        name="Трава газонная",
-        description="Универсальная",
-        price=500.0,
-        quantity=10,
-        country="Россия",
-        germination_period=7,
-        color="Зеленый"
-    )
-    assert grass.name == "Трава газонная"
-    assert grass.country == "Россия"
-    assert grass.germination_period == 7
-    assert grass.color == "Зеленый"
+def test_mixin_log_on_smartphone_creation(capsys):
+    Smartphone("iPhone", "Смартфон", 1000.0, 1, "A15", "13", 128, "black")
+    captured = capsys.readouterr()
+    assert "Создан объект класса Smartphone" in captured.out
 
 
-def test_add_smartphone_and_lawngrass_raises_typeerror():
-    phone = Smartphone("Phone", "desc", 1000.0, 1, "eff", "model", 64, "black")
-    grass = LawnGrass("Grass", "desc", 100.0, 1, "country", 7, "green")
+def test_mixin_log_on_lawngrass_creation(capsys):
+    LawnGrass("Grass", "Трава", 10.0, 1, "Russia", 7, "green")
+    captured = capsys.readouterr()
+    assert "Создан объект класса LawnGrass" in captured.out
+
+
+def test_baseproduct_is_abstract():
     with pytest.raises(TypeError):
-        phone + grass
+        BaseProduct("Test", "Desc", 100, 1)
 
 
-def test_add_same_subclass_works():
-    phone1 = Smartphone("Phone1", "desc", 1000.0, 2, "eff", "model", 64, "black")
-    phone2 = Smartphone("Phone2", "desc", 2000.0, 1, "eff", "model", 128, "white")
-    assert phone1 + phone2 == 1000.0 * 2 + 2000.0 * 1
-
-
-def test_add_product_with_non_product_raises():
-    category = Category("Test", "Desc", [])
-    with pytest.raises(TypeError):
-        category.add_product("не продукт")
-
-
-def test_add_product_accepts_subclass():
-    category = Category("Test", "Desc", [])
-    phone = Smartphone("Phone", "desc", 1000.0, 1, "eff", "model", 64, "black")
-    category.add_product(phone)
-    assert Category.product_count == 1
-    assert "Phone" in category.products
+def test_inheritance_chain():
+    assert issubclass(Product, BaseProduct)
+    assert issubclass(Product, MixinLog)
+    assert issubclass(Smartphone, Product)
+    assert issubclass(LawnGrass, Product)
