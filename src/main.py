@@ -2,7 +2,7 @@ from typing import List
 
 
 class Product:
-    """Класс для представления товара."""
+    """Базовый класс для всех продуктов."""
 
     name: str
     description: str
@@ -38,22 +38,60 @@ class Product:
             print("Цена не должна быть нулевая или отрицательная")
 
     def __str__(self) -> str:
-        """Строковое представление продукта."""
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other: 'Product') -> float:
-        """Сложение двух продуктов: цена*количество + цена*количество."""
-        if isinstance(other, Product):
-            return self.price * self.quantity + other.price * other.quantity
-        raise TypeError("Складывать можно только объекты Product")
+        """Сложение двух продуктов одного класса."""
+        if type(self) is not type(other):
+            raise TypeError("Нельзя складывать товары разных классов")
+        return self.price * self.quantity + other.price * other.quantity
+
+
+class Smartphone(Product):
+    """Класс смартфона."""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        efficiency: str,
+        model: str,
+        memory: int,
+        color: str
+    ):
+        super().__init__(name, description, price, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+
+class LawnGrass(Product):
+    """Класс газонной травы."""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        country: str,
+        germination_period: int,
+        color: str
+    ):
+        super().__init__(name, description, price, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
 
 
 class Category:
-    """Класс для представления категории товаров."""
+    """Класс категории товаров."""
 
     name: str
     description: str
-
     __products: List[Product]
 
     category_count = 0
@@ -68,22 +106,22 @@ class Category:
         Category.product_count += len(self.__products)
 
     def add_product(self, product: Product) -> None:
-        """Добавляет продукт в приватный список и увеличивает счётчик."""
+        """Добавляет продукт в приватный список."""
+        if not isinstance(product, Product):
+            raise TypeError("В категорию можно добавлять только объекты Product или его наследников")
         self.__products.append(product)
         Category.product_count += 1
 
     @property
     def products(self) -> str:
-        """Геттер, возвращающий строку со списком товаров."""
+        """Геттер списка товаров в виде строки."""
         result = ""
         for product in self.__products:
             result += f"{product}\n"
         return result
 
     def _get_total_quantity(self) -> int:
-        """Возвращает общее количество товаров на складе."""
         return sum(product.quantity for product in self.__products)
 
     def __str__(self) -> str:
-        """Строковое представление категории."""
         return f"{self.name}, количество продуктов: {self._get_total_quantity()} шт."
