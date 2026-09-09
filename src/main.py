@@ -42,6 +42,11 @@ class BaseProduct(ABC):
 class Product(MixinLog, BaseProduct):
     """Класс продукта."""
 
+    def __init__(self, name: str, description: str, price: float, quantity: int):
+        if quantity == 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
+        super().__init__(name, description, price, quantity)
+
     @classmethod
     def new_product(cls, product_dict: dict):
         return cls(
@@ -119,3 +124,10 @@ class Category:
 
     def __str__(self) -> str:
         return f"{self.name}, количество продуктов: {self._get_total_quantity()} шт."
+
+    def average_price(self) -> float:
+        """Возвращает среднюю цену товаров в категории или 0, если товаров нет."""
+        try:
+            return sum(product.price for product in self.__products) / len(self.__products)
+        except ZeroDivisionError:
+            return 0
